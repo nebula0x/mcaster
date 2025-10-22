@@ -1,120 +1,96 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useQuickAuth,useMiniKit } from "@coinbase/onchainkit/minikit";
-import { useRouter } from "next/navigation";
-import { minikitConfig } from "../minikit.config";
+import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit";
 import styles from "./page.module.css";
+import { useRouter } from "next/navigation";
+
+// Import our new components
+import CastInput from "./components/CastInput";
+import CastPreview from "./components/CastPreview";
+import MintButton from "./components/MintButton";
+import MintSuccess from "./components/MintSuccess";
 
 interface AuthResponse {
   success: boolean;
   user?: {
-    fid: number; // FID is the unique identifier for the user
+    fid: number;
     issuedAt?: number;
     expiresAt?: number;
   };
-  message?: string; // Error messages come as 'message' not 'error'
+  message?: string;
 }
-
 
 export default function Home() {
   const { isFrameReady, setFrameReady, context } = useMiniKit();
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
   const router = useRouter();
 
-  // Initialize the  miniapp
+  // Authentication
+  const { data: authData, isLoading: isAuthLoading, error: authError } =
+    useQuickAuth<AuthResponse>("/api/auth", { method: "GET" });
+
+  const [step, setStep] = useState<"input" | "preview" | "minting" | "success">("input");
+  const [castData, setCastData] = useState<any>(null);
+  const [txHash, setTxHash] = useState("");
+
   useEffect(() => {
-    if (!isFrameReady) {
-      setFrameReady();
-    }
-  }, [setFrameReady, isFrameReady]);
- 
-  
+    if (!isFrameReady) setFrameReady();
+  }, [isFrameReady, setFrameReady]);
 
-  // If you need to verify the user's identity, you can use the useQuickAuth hook.
-  // This hook will verify the user's signature and return the user's FID. You can update
-  // this to meet your needs. See the /app/api/auth/route.ts file for more details.
-  // Note: If you don't need to verify the user's identity, you can get their FID and other user data
-  // via `context.user.fid`.
-  // const { data, isLoading, error } = useQuickAuth<{
-  //   userFid: string;
-  // }>("/api/auth");
+  // Verify authentication
+  // TEMP: bypass auth for UI testing
+const isAuthenticated = true;
 
-  const { data: authData, isLoading: isAuthLoading, error: authError } = useQuickAuth<AuthResponse>(
-    "/api/auth",
-    { method: "GET" }
-  );
 
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    // Check authentication first
-    if (isAuthLoading) {
-      setError("Please wait while we verify your identity...");
-      return;
-    }
-
-    if (authError || !authData?.success) {
-      setError("Please authenticate to join the waitlist");
-      return;
-    }
-
-    if (!email) {
-      setError("Please enter your email address");
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
-
-    // TODO: Save email to database/API with user FID
-    console.log("Valid email submitted:", email);
-    console.log("User authenticated:", authData.user);
-    
-    // Navigate to success page
-    router.push("/success");
-  };
-
+  // Render logic
   return (
-    <div className={styles.container}>
-      <button className={styles.closeButton} type="button">
-        ✕
-      </button>
-      
+    <main className={styles.container}>
       <div className={styles.content}>
-        <div className={styles.waitlistForm}>
-          <h1 className={styles.title}>Join {minikitConfig.miniapp.name.toUpperCase()}</h1>
-          
-          <p className={styles.subtitle}>
-             Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future of<br />
-            crypto marketing strategy.
-          </p>
+        {!isAuthenticated ? (
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+            <h1 className="text-3xl font-bold">🔐 Authenticate Required</h1>
+            <p className="text-gray-400">
+              Please authenticate via Coinbase MiniKit to mint your cast.
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center min-h-screen text-center space-y-6">
+            {step === "input" && (
+              <CastInput
+                onPreview={(data: any) => {
+                  setCastData(data);
+                  setStep("preview");
+                }}
+              />
+            )}
 
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <input
-              type="email"
-              placeholder="Your amazing email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={styles.emailInput}
-            />
-            
-            {error && <p className={styles.error}>{error}</p>}
-            
-            <button type="submit" className={styles.joinButton}>
-              JOIN WAITLIST
-            </button>
-          </form>
-        </div>
+            {step === "preview" && castData && (
+              <div className="space-y-6 w-full max-w-md">
+                <CastPreview cast={castData} />
+                <MintButton
+                  cast={castData}
+                  onMinting={() => setStep("minting")}
+                  onSuccess={(tx: string) => {
+                    setTxHash(tx);
+                    setStep("success");
+                  }}
+                />
+              </div>
+            )}
+
+            {step === "minting" && (
+              <p className="text-xl text-gray-400 animate-pulse">⏳ Minting in progress...</p>
+            )}
+
+            {step === "success" && (
+              <MintSuccess
+                txHash={txHash}
+                castUrl={castData?.url}
+                onReset={() => setStep("input")}
+              />
+            )}
+          </div>
+        )}
       </div>
-    </div>
+    </main>
   );
 }
