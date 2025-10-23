@@ -6,24 +6,25 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // ✅ Proper fix for image domain validation
+  // ✅ Fix build: allow remote domains & disable optimization enforcement
   images: {
+    unoptimized: true, // <--- This prevents Next.js build errors with external images
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**.warpcast.com",      // Warpcast posts/media
+        hostname: "**.warpcast.com",
       },
       {
         protocol: "https",
-        hostname: "**.neynar.com",        // Neynar API assets
+        hostname: "**.neynar.com",
       },
       {
         protocol: "https",
-        hostname: "**.cdn.farcaster.xyz", // Farcaster CDN images
+        hostname: "**.cdn.farcaster.xyz",
       },
       {
         protocol: "https",
-        hostname: "**.ipfs.nftstorage.link", // Optional: IPFS if you host NFTs
+        hostname: "**.ipfs.nftstorage.link",
       },
     ],
   },
