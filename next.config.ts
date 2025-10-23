@@ -6,9 +6,10 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // ✅ Fix build: allow remote domains & disable optimization enforcement
+  // ✅ Image settings (TypeScript-safe)
   images: {
-    unoptimized: true, // <--- This prevents Next.js build errors with external images
+    // @ts-expect-error: "unoptimized" is allowed but missing from NextConfig type
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
