@@ -1,15 +1,13 @@
 "use client";
 import { useState } from "react";
 
-export default function MintButton({
-  cast,
-  onMinting,
-  onSuccess,
-}: {
-  cast: any;
+interface MintButtonProps {
+  cast: Record<string, unknown>;
   onMinting: () => void;
   onSuccess: (txHash: string) => void;
-}) {
+}
+
+export default function MintButton({ cast, onMinting, onSuccess }: MintButtonProps) {
   const [loading, setLoading] = useState(false);
 
   const handleMint = async () => {

@@ -1,7 +1,17 @@
 "use client";
 import Image from "next/image";
 
-export default function CastPreview({ cast }: { cast: any }) {
+interface Cast {
+  author?: { username?: string };
+  text?: string;
+  embeds?: { url?: string }[];
+}
+
+interface CastPreviewProps {
+  cast: Cast;
+}
+
+export default function CastPreview({ cast }: CastPreviewProps) {
   const imageUrl = cast.embeds?.[0]?.url || "";
 
   return (

@@ -1,14 +1,12 @@
 "use client";
 
-export default function MintSuccess({
-  txHash,
-  castUrl,
-  onReset,
-}: {
+interface MintSuccessProps {
   txHash: string;
   castUrl: string;
   onReset: () => void;
-}) {
+}
+
+export default function MintSuccess({ txHash, castUrl, onReset }: MintSuccessProps) {
   return (
     <div className="flex flex-col items-center space-y-4 p-6 text-center">
       <h2 className="text-2xl font-bold text-green-400">✅ Mint Successful!</h2>
@@ -18,6 +16,7 @@ export default function MintSuccess({
         <a
           href={`https://basescan.org/tx/${txHash}`}
           target="_blank"
+          rel="noopener noreferrer"
           className="text-blue-400 underline"
         >
           View Transaction
@@ -25,6 +24,7 @@ export default function MintSuccess({
         <a
           href={castUrl}
           target="_blank"
+          rel="noopener noreferrer"
           className="text-purple-400 underline"
         >
           View on Warpcast

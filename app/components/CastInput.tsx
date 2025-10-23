@@ -1,7 +1,11 @@
 "use client";
 import { useState } from "react";
 
-export default function CastInput({ onPreview }: { onPreview: (data: any) => void }) {
+interface CastInputProps {
+  onPreview: (data: Record<string, unknown>) => void;
+}
+
+export default function CastInput({ onPreview }: CastInputProps) {
   const [castUrl, setCastUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -16,7 +20,7 @@ export default function CastInput({ onPreview }: { onPreview: (data: any) => voi
     try {
       const res = await fetch(`/api/farcaster?url=${encodeURIComponent(castUrl)}`);
       const data = await res.json();
-      if (data && data.text) {
+      if (data && (data as Record<string, unknown>).text) {
         onPreview(data);
       } else {
         setError("No cast found. Please check the URL.");
