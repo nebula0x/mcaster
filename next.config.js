@@ -5,26 +5,14 @@ const nextConfig = {
     return config;
   },
 
-  // ✅ Disable optimization to allow all external images
+  // ✅ disable optimization completely
   images: {
     unoptimized: true,
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**.warpcast.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.neynar.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.cdn.farcaster.xyz",
-      },
-      {
-        protocol: "https",
-        hostname: "**.ipfs.nftstorage.link",
-      },
+      { protocol: "https", hostname: "**.warpcast.com" },
+      { protocol: "https", hostname: "**.neynar.com" },
+      { protocol: "https", hostname: "**.cdn.farcaster.xyz" },
+      { protocol: "https", hostname: "**.ipfs.nftstorage.link" },
     ],
   },
 };
