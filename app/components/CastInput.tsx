@@ -1,5 +1,7 @@
 "use client";
+
 import { useState } from "react";
+import styles from "./CastInput.module.css";
 
 interface CastInputProps {
   onPreview: (data: Record<string, unknown>) => void;
@@ -11,21 +13,31 @@ export default function CastInput({ onPreview }: CastInputProps) {
   const [error, setError] = useState("");
 
   const handlePreview = async () => {
-    if (!castUrl) {
-      setError("Please enter a Farcaster cast URL or ID");
+    if (!castUrl.trim()) {
+      setError("Please paste a Farcaster cast URL or cast ID.");
       return;
     }
+
     setError("");
     setLoading(true);
+
     try {
-      const res = await fetch(`/api/farcaster?url=${encodeURIComponent(castUrl)}`);
+      const res = await fetch(
+        `/api/farcaster?url=${encodeURIComponent(castUrl.trim())}`
+      );
       const data = await res.json();
-      if (data && (data as Record<string, unknown>).text) {
-        onPreview(data);
+      console.log("Fetched data:", data);
+
+      // Handle both backend response shapes: { cast: {...} } or direct {...}
+      const cast = (data as any).cast || data;
+
+      if (cast && cast.text) {
+        onPreview(cast);
       } else {
-        setError("No cast found. Please check the URL.");
+        setError("No cast found. Double-check the URL or ID.");
       }
-    } catch {
+    } catch (err) {
+      console.error("Error fetching cast:", err);
       setError("Failed to fetch cast. Try again.");
     } finally {
       setLoading(false);
@@ -33,23 +45,29 @@ export default function CastInput({ onPreview }: CastInputProps) {
   };
 
   return (
-    <div className="flex flex-col items-center space-y-4 w-full max-w-md">
-      <h1 className="text-3xl font-bold">🎨 Cast Mint</h1>
+    <div className={styles.wrapper}>
+      <h2 className={styles.title}>Cast Mint</h2>
+      <p className={styles.subtitle}>
+        Paste a Farcaster cast URL or ID below to preview and mint it on-chain.
+      </p>
+
       <input
         type="text"
-        placeholder="Input your cast URL or ID"
+        placeholder="https://warpcast.com/~/casts/0xabc…"
         value={castUrl}
         onChange={(e) => setCastUrl(e.target.value)}
-        className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 text-white placeholder-gray-500"
+        className={styles.input}
       />
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+
       <button
         onClick={handlePreview}
         disabled={loading}
-        className="bg-purple-600 hover:bg-purple-500 transition px-6 py-2 rounded-lg font-semibold"
+        className={styles.button}
       >
-        {loading ? "Loading..." : "🔍 Preview Cast"}
+        {loading ? "Loading…" : "Preview Cast"}
       </button>
+
+      {error && <p className={styles.error}>{error}</p>}
     </div>
   );
 }

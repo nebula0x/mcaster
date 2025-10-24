@@ -1,52 +1,30 @@
-import type { Metadata } from "next";
-import { Inter, Source_Code_Pro } from "next/font/google";
-import { SafeArea } from "@coinbase/onchainkit/minikit";
-import { minikitConfig } from "../minikit.config";
-import { RootProvider } from "./rootProvider";
-import "./globals.css";
+// ❌ NO "use client" here!
 
-export async function generateMetadata(): Promise<Metadata> {
-  return {
+import "./globals.css";
+import type { Metadata } from "next";
+import { minikitConfig } from "../minikit.config";
+import ClientRoot from "./ClientRoot";
+
+export const metadata: Metadata = {
+  title: minikitConfig.miniapp.name,
+  description: minikitConfig.miniapp.description,
+  openGraph: {
     title: minikitConfig.miniapp.name,
     description: minikitConfig.miniapp.description,
-    other: {
-      "fc:frame": JSON.stringify({
-        version: minikitConfig.miniapp.version,
-        imageUrl: minikitConfig.miniapp.heroImageUrl,
-        button: {
-          title: `Join the ${minikitConfig.miniapp.name} Waitlist`,
-          action: {
-            name: `Launch ${minikitConfig.miniapp.name}`,
-            type: "launch_frame",
-          },
-        },
-      }),
-    },
-  };
-}
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const sourceCodePro = Source_Code_Pro({
-  variable: "--font-source-code-pro",
-  subsets: ["latin"],
-});
+    images: [minikitConfig.miniapp.heroImageUrl],
+  },
+};
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <RootProvider>
-      <html lang="en">
-        <body className={`${inter.variable} ${sourceCodePro.variable}`}>
-          <SafeArea>{children}</SafeArea>
-        </body>
-      </html>
-    </RootProvider>
+    <html lang="en">
+      <body>
+        <ClientRoot>{children}</ClientRoot>
+      </body>
+    </html>
   );
 }
