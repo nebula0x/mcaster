@@ -11,29 +11,30 @@ export default function ConnectButton() {
   const [insideWarpcast, setInsideWarpcast] = useState(false);
 
   useEffect(() => {
+    // avoid SSR mismatch
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
-    if (typeof window === "undefined") return;
+    if (!mounted || typeof window === "undefined") return;
 
-    async function setupMiniApp() {
+    const setupMiniApp = async () => {
       try {
         const miniApp = new MiniAppClient();
         await miniApp.init();
 
         const env = miniApp.getEnvironment();
-        const isInside = env.isWarpcast;
+        const isInside = env?.isWarpcast ?? false;
         setInsideWarpcast(isInside);
 
         if (isInside) {
-          const signer = await miniApp.getSigner();
+          const signer = await miniApp.getSigner().catch(() => null);
+
           if (signer?.address) {
             console.log("🟣 Connected with Farcaster:", signer.address);
             setConnectedAddress(signer.address);
 
-            // Optional: send signer data to backend
+            // Optional: send signer info to your backend
             await fetch("/api/farcaster", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -42,6 +43,8 @@ export default function ConnectButton() {
                 fid: signer.fid,
               }),
             });
+          } else {
+            console.warn("⚠️ No signer available inside Warpcast.");
           }
         }
       } catch (err) {
@@ -49,13 +52,15 @@ export default function ConnectButton() {
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     setupMiniApp();
   }, [mounted]);
 
+  // SSR safety
   if (!mounted) return null;
 
+  // Loading UI
   if (loading) {
     return (
       <button
@@ -67,6 +72,7 @@ export default function ConnectButton() {
     );
   }
 
+  // Connected inside Warpcast
   if (insideWarpcast && connectedAddress) {
     return (
       <button
@@ -78,5 +84,6 @@ export default function ConnectButton() {
     );
   }
 
+  // Fallback: show Coinbase connect button in browser
   return <ConnectWallet />;
 }
