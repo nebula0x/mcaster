@@ -1,8 +1,8 @@
 "use client";
 
 import { OnchainKitProvider } from "@coinbase/onchainkit";
-import { minikitConfig } from "../minikit.config";
 import { base } from "wagmi/chains";
+import { minikitConfig } from "../minikit.config";
 
 export default function RootProvider({
   children,
@@ -16,23 +16,10 @@ export default function RootProvider({
     return <>{children}</>;
   }
 
-  const appName = minikitConfig?.miniapp?.name || "Cubey MiniApp";
-  const appDescription =
-    minikitConfig?.miniapp?.description || "Your AI Ad Companion";
-  const appUrl = minikitConfig?.miniapp?.homeUrl || "http://localhost:3000";
-  const appIcon =
-    minikitConfig?.miniapp?.iconUrl || "http://localhost:3000/blue-icon.png";
-
-  console.log("✅ OnchainKitProvider initialized:", { apiKey, appName, appUrl });
+  console.log("✅ OnchainKitProvider initialized:", { apiKey });
 
   return (
-    <OnchainKitProvider
-      apiKey={apiKey}
-      chain={base}
-      config={{
-        app: { name: appName, description: appDescription, url: appUrl, icon: appIcon },
-      }}
-    >
+    <OnchainKitProvider apiKey={apiKey} chain={base}>
       {children}
     </OnchainKitProvider>
   );

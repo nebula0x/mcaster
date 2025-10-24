@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: minikitConfig.miniapp.name,
     description: minikitConfig.miniapp.description,
-    images: [minikitConfig.miniapp.heroImageUrl],
+    images: [...minikitConfig.miniapp.screenshotUrls],
   },
 };
 
